@@ -11,9 +11,5 @@ class GameInterface(ABC):
     def perform_action(self, action:Action):
         raise NotImplementedError()
 
-    def get_game_state(self) -> GameState:
-        raise NotImplementedError()
-
-    async def get_game_updates(self) -> Generator[GameState, None, None]:
-        #TODO: Default implementation of this that calls get_game_state()
+    def get_state(self) -> GameState:
         raise NotImplementedError()

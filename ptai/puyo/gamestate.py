@@ -18,7 +18,7 @@ class PuyoGameState(GameState):
         b'k': (0, 0, 0),
     }
 
-    def __init__(self, board=None, queue=None):
+    def __init__(self, board=None, queue=None, new_turn=False):
         if board is None:
             board = numpy.array([[b'.' for y in range(12)]
                                        for x in range(6)], dtype="|S1")
@@ -26,7 +26,7 @@ class PuyoGameState(GameState):
             board = numpy.array(board, dtype="|S1")
         assert board.shape == (6, 12)
 
-        super().__init__(board, queue or [])
+        super().__init__(board, queue or [], new_turn)
 
     def __str__(self):
         lines = []
@@ -85,12 +85,12 @@ class PuyoGameState(GameState):
         else:
             pos_range = list(range(2, move.orientation-1, -1))
         for i in pos_range:
-            if self.board[i][11] != b' ':
+            if self.board[i][11] != b'.':
                 return False
 
         # Make sure there is room to rotate the beans
-        if move.orientation != 0 and self.board[1][11] != b' ' and \
-                             self.board[3][11] != b' ':
+        if move.orientation != 0 and self.board[1][11] != b'.' and \
+                             self.board[3][11] != b'.':
             return False
 
         return True

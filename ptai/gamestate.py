@@ -18,7 +18,7 @@ class GameState(ABC):
     # Map cell value to tuple of (red, green, blue) color to draw.
     cell_colors: Dict[bytes, Tuple[int, int, int]]
 
-    def __init__(self, board, queue):
+    def __init__(self, board, queue, new_turn):
         assert isinstance(board, numpy.ndarray)
         assert board.dtype == "|S1"
         assert len(board.shape) == 2
@@ -26,6 +26,7 @@ class GameState(ABC):
 
         self.board:numpy.ndarray = board
         self.queue:List[bytes] = queue
+        self.new_turn:bool = new_turn
 
     ############################
     ##### Abstract Methods #####

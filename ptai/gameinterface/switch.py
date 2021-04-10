@@ -49,6 +49,28 @@ class Switch:
         self.usb_out.write(struct.pack("<I", (len(command)+2)))
         self.usb_out.write(command)
 
+    def set_sleep_time(self, milliseconds:int):
+        """Milliseconds for switch USB-Botbase to sleep after a command.
+
+        Every iteration in USB-Botbase `svcSleepThread(milliseconds*1e6)` is
+        called, which is syscall 0x0B. The 1e6 is because svcSleepThread takes
+        nanoseconds. See:
+        * [svcSleepThread](https://switchbrew.github.io/libnx/svc_8h.html#a0591112f39c2dee78eb9a0a862611fa6)
+        * [syscalls](https://switchbrew.org/wiki/SVC)
+
+        Default (in USB-Botbase) is 50.
+        """
+        self.send_command(f"configure mainLoopSleepTime {milliseconds}")
+
+    def press_button(self, button):
+        self.send_command(f"click {button}")
+
+    def hold_button(self, button):
+        self.send_command(f"press {button}")
+
+    def release_button(self, button):
+        self.send_command(f"release {button}")
+
     def peek(self, segment, address, size):
         peek_commands = {
             "absolute": "peekAbsolute",
@@ -84,33 +106,3 @@ class Switch:
             size -= chunk_size
 
         return b''.join(chunks)
-
-    def old_read_bytes(self, array=False, position=0):
-        #TODO: Remove depricated method
-        size = int(struct.unpack("<L", self.usb_in.read(4, timeout=0).tobytes())[0])
-
-        data = [0] * size
-        if size > 4080:
-            i = 0
-            while i < size:
-                chunkSize = 4080
-                if size - i < 4080:
-                    chunkSize = size - i
-                x = self.usb_in.read(chunkSize, timeout=0).tobytes()
-
-                for j in range(len(x)):
-                    data[i] = x[j]
-                    i+=1
-        else:
-            x = self.usb_in.read(size, timeout=0).tobytes()
-
-            #Converts received data to integer array
-            for i in range(size):
-                data[i] = int(x[i])
-
-        if array:
-            if position == -1:
-                return data
-            return data[position]
-
-        return int.from_bytes(data, byteorder="little", signed=False)

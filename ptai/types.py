@@ -14,8 +14,9 @@ class MoveAction(Action):
     piece: bytes
     orientation: int
     x: int
-    y: Optional[int]
+    y: Optional[int] = None
+    fast_down: bool = True
 
 @dataclass
-class ButtonPressAction(Action):
+class PressButtonAction(Action):
     button: str
