@@ -1,9 +1,26 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Iterable, List, Dict, Tuple
 
 import numpy
 
 from ptai.types import GameType, MoveAction
+
+
+@dataclass
+class MoveResult:
+
+    # Additional score gained from this move
+    score: int
+
+    # Combo count. Zero if no cells were eliminated.
+    n_combo: int
+
+    # Number of individual blocks eliminated on the board
+    n_cells_eliminated: int
+
+    # True if this move resulted in a game over
+    game_over: bool = False
 
 
 class GameState(ABC):
@@ -37,7 +54,7 @@ class GameState(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def move(self, move: MoveAction) -> None:
+    def move(self, move: MoveAction) -> MoveResult:
         raise NotImplementedError()
 
     @abstractmethod

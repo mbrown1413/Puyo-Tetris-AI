@@ -1,8 +1,14 @@
 import numpy
 from typing import Iterable
 
-from ptai.gamestate import GameState
+from ptai.gamestate import GameState, MoveResult
 from ptai.types import GameType, MoveAction
+
+
+# Score calculation tables
+CHAIN_POWER_TABLE = (0, 8, 16, 32, 64, 128, 256, 512, 999)
+COLOR_BONUS_TABLE = (0, 0, 3, 6, 12, 24)
+GROUP_BONUS_TABLE = (0, 0, 0, 0, 0, 2, 3, 4, 5, 6, 7, 10)
 
 
 class PuyoGameState(GameState):
@@ -52,9 +58,33 @@ class PuyoGameState(GameState):
     def copy(self) -> "PuyoGameState":
         return PuyoGameState(self.board, self.queue)
 
-    def move(self, move: MoveAction) -> None:
-        assert self.queue.length > 0 and move.piece == self.queue[0]
-        raise NotImplementedError()
+    def move(self, move: MoveAction) -> MoveResult:
+        assert self._can_make_move(move)
+        assert len(self.queue) > 0 and move.piece == self.queue[0]
+        pair = self.queue.pop(0)
+        assert len(pair) == 2
+        pair = [pair[0:1], pair[1:2]]
+
+        for bean in pair:
+            assert bean in {b'r', b'g', b'b', b'y', b'p'}
+
+        if move.x == 2 and move.orientation == 0 and self.board[2][11] != b'.':
+            # This column is filled, so it's the only valid move, and results
+            # in a game over.
+            #return Combo(0, 0, 0, True)
+            return MoveResult(0, 0, 0, True)
+
+        # Force orientation to be 0 or 1, switching order of pair if needed.
+        if move.orientation > 1:
+            orientation = move.orientation - 2
+        else:
+            orientation = move.orientation
+            pair = pair[::-1]
+
+        if orientation == 0:
+            return self._drop_beans((move.x, move.x), pair)
+        else:
+            return self._drop_beans((move.x, move.x+1), pair)
 
     def get_moves(self) -> Iterable[MoveAction]:
         piece = self.queue[0]
@@ -62,10 +92,15 @@ class PuyoGameState(GameState):
             for x in range(5 if orientation%2 else 6):
                 y = None  # Puyo doesn't use Y because of its gravity rules
                 move = MoveAction(piece, orientation, x, y)
-                if self.can_make_move(move):
+                if self._can_make_move(move):
                     yield move
 
-    def can_make_move(self, move:MoveAction):
+
+    ############################
+    ##### Internal Methods #####
+    ############################
+
+    def _can_make_move(self, move:MoveAction):
         """Return True if the move can be made, False otherwise."""
 
         # Is this even a valid move?
@@ -94,3 +129,114 @@ class PuyoGameState(GameState):
             return False
 
         return True
+
+    def _drop_beans(self, xs, beans) -> MoveResult:
+        for x, bean in zip(xs, beans):
+            self._drop(x, bean)
+
+        total_score = 0
+        total_n_beans = 0
+        for i in range(25):  # Shouldn't be possible to have more than a 25-combo
+            n_beans, n_colors, group_bonus = self._eliminate_beans()
+            if n_beans == 0:
+                break
+
+            self._do_gravity()
+
+            # Calculate Score
+            # Based on: http://puyonexus.net/wiki/Scoring
+            if i >= len(CHAIN_POWER_TABLE):
+                chain_power = CHAIN_POWER_TABLE[-1]
+            else:
+                chain_power = CHAIN_POWER_TABLE[i]
+            color_bonus = COLOR_BONUS_TABLE[n_colors]
+            multiplier = chain_power + color_bonus + group_bonus
+            multiplier = max(1, min(999, multiplier))
+            score = 10 * n_beans * multiplier
+
+            total_score += score
+            total_n_beans += n_beans
+
+        return MoveResult(
+            score=total_score,
+            n_combo=i,
+            n_cells_eliminated=total_n_beans,
+        )
+
+    def _drop(self, x, bean):
+        for y in range(12):
+            if self.board[x][y] == b'.':
+                self.board[x][y] = bean
+                break
+
+    def _eliminate_beans(self):
+
+        def eliminate_if_black_bean(x, y):
+            if x < 0 or x > 5 or y < 0 or y > 11:
+                return
+            if self.board[x][y] == b'k':
+                self.board[x][y] = b'.'
+
+        n_beans = 0
+        colors_eliminated = set()
+        group_bonus = 0
+        for x in range(6):
+            for y in range(12):
+                if self.board[x][y] == b'.' or self.board[x][y] == b'k':
+                    continue
+                coordinates = self._get_connected(x, y)
+                if len(coordinates) < 4:
+                    continue
+
+                colors_eliminated.add(self.board[x][y])
+                if len(coordinates) >= len(GROUP_BONUS_TABLE):
+                    group_bonus += GROUP_BONUS_TABLE[-1]
+                else:
+                    group_bonus += GROUP_BONUS_TABLE[len(coordinates)]
+
+                for x, y in coordinates:
+                    eliminate_if_black_bean(x-1, y)
+                    eliminate_if_black_bean(x+1, y)
+                    eliminate_if_black_bean(x, y-1)
+                    eliminate_if_black_bean(x, y+1)
+                    self.board[x][y] = b'.'
+                    n_beans += 1
+
+        return n_beans, len(colors_eliminated), group_bonus
+
+    def _get_connected(self, x, y):
+        """Return a list of coordinates connected by color to (x, y)."""
+        color = self.board[x][y]
+        if color == b' ' or color == b'k':
+            return []
+
+        visited = set()
+
+        def visit(x, y):
+            if (x, y) in visited:
+                return
+            if x < 0 or x >= 6 or y < 0 or y >= 12:
+                return
+            if self.board[x][y] == color:
+                visited.add((x, y))
+
+                visit(x-1, y)
+                visit(x+1, y)
+                visit(x, y-1)
+                visit(x, y+1)
+
+        visit(x, y)
+        return list(visited)
+
+    def _do_gravity(self):
+        """Make floating beans fall."""
+        for x in range(6):
+            lowest_free_y = 0
+            for y in range(12):
+
+                if self.board[x][y] != b'.':
+                    tmp = self.board[x][lowest_free_y]
+                    self.board[x][lowest_free_y] = self.board[x][y]
+                    self.board[x][y] = tmp
+
+                    lowest_free_y += 1
