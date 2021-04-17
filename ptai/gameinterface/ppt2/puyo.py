@@ -63,10 +63,11 @@ class PPT2PuyoInterface(GameInterface):
                 PressButtonAction(direction_key)
             )
 
+        #TODO: Double check that we moved correctly by calling get_state()
+        #      before doing fast down.
+
         # Fast down
         if move.fast_down:
             self.perform_action(
                 PressButtonAction("DUP")
             )
-
-        #TODO: Double check that we moved correctly by calling get_state()
