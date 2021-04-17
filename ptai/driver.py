@@ -1,6 +1,6 @@
 from ptai.gameinterface.base import GameInterface
 from ptai.types import PressButtonAction
-from ptai.ai.base import AI
+from ptai.ai import AI
 
 class Driver:
 

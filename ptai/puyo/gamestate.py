@@ -56,14 +56,18 @@ class PuyoGameState(GameState):
         return '\n'.join(lines)
 
     def copy(self) -> "PuyoGameState":
-        return PuyoGameState(self.board, self.queue)
+        return PuyoGameState(self.board, self.queue, self.new_turn)
 
     def move(self, move: MoveAction) -> MoveResult:
         assert self._can_make_move(move)
-        assert len(self.queue) > 0 and move.piece == self.queue[0]
-        pair = self.queue.pop(0)
-        assert len(pair) == 2
-        pair = [pair[0:1], pair[1:2]]
+
+        # Don't actually check that the piece in `move` is the same as the next
+        # in the queue, but pop off queue anyways.
+        #assert len(self.queue) > 0 and move.piece == self.queue[0]
+        if self.queue:
+            self.queue.pop(0)
+        assert len(move.piece) == 2
+        pair = [move.piece[0:1], move.piece[1:2]]
 
         for bean in pair:
             assert bean in {b'r', b'g', b'b', b'y', b'p'}

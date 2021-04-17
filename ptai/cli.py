@@ -2,7 +2,7 @@ import argparse
 from time import sleep
 
 from ptai.gameinterface.ppt2.puyo import PPT2PuyoInterface
-from ptai.ai.generic import RandomAI
+from ptai.puyo.ai import SimpleComboAI
 from ptai.driver import Driver
 
 def main():
@@ -32,8 +32,14 @@ def main():
     args = parser.parse_args()
     args.func(args)
 
+def get_interface(args):
+    return PPT2PuyoInterface()
+
+def get_ai(args):
+    return SimpleComboAI()
+
 def cmd_getstate(args):
-    interface = PPT2PuyoInterface()
+    interface = get_interface(args)
     state = interface.get_state()
     print(state)
 
@@ -44,8 +50,8 @@ def cmd_getstate(args):
         print(state)
 
 def cmd_getmove(args):
-    interface = PPT2PuyoInterface()
-    ai = RandomAI()
+    interface = get_interface(args)
+    ai = get_ai(args)
 
     state = interface.get_state()
     move = ai.get_move(state)
@@ -54,7 +60,8 @@ def cmd_getmove(args):
     print("Orientation:", move.orientation)
 
 def cmd_play(args):
-    interface = PPT2PuyoInterface()
-    ai = RandomAI()
+    interface = get_interface(args)
+    ai = get_ai(args)
     driver = Driver(interface, ai)
+
     driver.play()
