@@ -13,9 +13,12 @@ MAIN_POINTER = 0x1625840
 class PPT2PuyoInterface(GameInterface):
     game_type = GameType.PUYO
 
-    def __init__(self, player:int=0):
+    def __init__(self, player:int=0, switch:Switch=None):
         self.player = player
-        self.switch = Switch()
+        if switch is None:
+            self.switch = Switch()
+        else:
+            self.switch = switch
 
         self._previous_queue:Optional[tuple] = None
 
@@ -48,26 +51,31 @@ class PPT2PuyoInterface(GameInterface):
         return state
 
     def perform_move(self, move:MoveAction):
+        delta_x = move.x - 2
 
         # Rotation
-        #TODO: Press B to rotate if orientation == 3
-        for _ in range(abs(move.orientation)):
-            self.perform_action(
-                PressButtonAction("A")
-            )
+        if move.orientation == 0:
+            pass
+        elif move.orientation == 1:
+            self.perform_action(PressButtonAction("A"))
+        elif move.orientation == 2:
+            self.perform_action(PressButtonAction("A"))
+            self.perform_action(PressButtonAction("A"))
+        elif move.orientation == 3:
+            self.perform_action(PressButtonAction("B"))
+
+            # Since rotation point is the bottom bean, this effectively moves
+            # the piece to the left.
+            delta_x += 1
 
         # Left / right
-        direction_key = "DRIGHT" if move.x > 1 else "DLEFT"
-        for _ in range(abs(move.x - 2)):
-            self.perform_action(
-                PressButtonAction(direction_key)
-            )
+        direction_key = "DRIGHT" if delta_x > 0 else "DLEFT"
+        for _ in range(abs(delta_x)):
+            self.perform_action(PressButtonAction(direction_key))
 
         #TODO: Double check that we moved correctly by calling get_state()
         #      before doing fast down.
 
         # Fast down
         if move.fast_down:
-            self.perform_action(
-                PressButtonAction("DUP")
-            )
+            self.perform_action(PressButtonAction("DUP"))
