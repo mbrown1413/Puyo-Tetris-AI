@@ -55,10 +55,23 @@ class GameState(ABC):
 
     @abstractmethod
     def move(self, move: MoveAction) -> MoveResult:
+        """
+        Perform the move defined by the given MoveAction, mutating the state
+        object.
+
+        This does not validate that the falling piece in the move is the next
+        in the queue, and it does not pop an item off the queue. That is the
+        responsibility of the calling code if it needs to keep track of the
+        piece queue.
+        """
         raise NotImplementedError()
 
     @abstractmethod
     def get_moves(self) -> Iterable[MoveAction]:
+        """
+        List all possible next moves, given the current state of the board and
+        the next piece in the queue.
+        """
         raise NotImplementedError()
 
     ##########################
