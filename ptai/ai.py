@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import random
 from typing import Union
 
-from ptai.types import MoveAction
+from ptai.actions import MoveAction
 from ptai.gamestate import GameState
 
 
@@ -29,7 +29,8 @@ class ScoreBasedAI(AI):
     """Abstract class for an AI that works by scoring each possible move."""
 
     def get_move(self, state:GameState) -> MoveAction:
-        score_func = lambda move: self.score_move(state.copy(), move)
+        def score_func(move):
+            return self.score_move(state.copy(), move)
         moves = list(state.get_moves())
         random.shuffle(moves)  # Select randomly between ties
         return max(moves, key=score_func)

@@ -1,7 +1,7 @@
 import argparse
 from time import sleep
 
-from ptai.gameinterface.ppt2.puyo import PPT2PuyoInterface
+from ptai.ppt2.puyointerface import PPT2PuyoInterface
 from ptai.puyo.ai import SimpleComboAI
 from ptai.driver import Driver
 

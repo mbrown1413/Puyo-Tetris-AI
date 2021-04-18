@@ -1,17 +1,16 @@
 from typing import Optional
 
-from ptai.types import GameType, Action, PressButtonAction, MoveAction
+from ptai.actions import Action, PressButtonAction, MoveAction
 from ptai.gamestate import GameState
-from ptai.gameinterface.base import GameInterface
-from ptai.gameinterface.switch import Switch
-from ptai.gameinterface.switchtypes import Pointer
-from ptai.gameinterface.ppt2.puyotypes import MainStruct
+from ptai.gameinterface import GameInterface
+from ptai.ppt2.switch import Switch
+from ptai.ppt2.switchtypes import Pointer
+from ptai.ppt2.puyotypes import MainStruct
 
 MAIN_POINTER = 0x1625840
 
 
 class PPT2PuyoInterface(GameInterface):
-    game_type = GameType.PUYO
 
     def __init__(self, player:int=0, switch:Switch=None):
         self.player = player
@@ -20,6 +19,8 @@ class PPT2PuyoInterface(GameInterface):
         else:
             self.switch = switch
 
+        self.switch.send_command("configure buttonClickSleepTime 20")
+        self.switch.set_sleep_time(8)
         self._previous_queue:Optional[tuple] = None
 
     def perform_action(self, action:Action):
@@ -47,7 +48,7 @@ class PPT2PuyoInterface(GameInterface):
             state.new_turn = True
         self._previous_queue = queue
 
-        self.switch.set_sleep_time(16)
+        self.switch.set_sleep_time(8)
         return state
 
     def perform_move(self, move:MoveAction):

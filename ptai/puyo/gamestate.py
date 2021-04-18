@@ -2,7 +2,7 @@ import numpy
 from typing import Iterable
 
 from ptai.gamestate import GameState, MoveResult
-from ptai.types import GameType, MoveAction
+from ptai.actions import MoveAction
 
 
 # Score calculation tables
@@ -12,7 +12,6 @@ GROUP_BONUS_TABLE = (0, 0, 0, 0, 0, 2, 3, 4, 5, 6, 7, 10)
 
 
 class PuyoGameState(GameState):
-    game_type = GameType.PUYO
 
     cell_colors = {
         b'.': (255, 255, 255),

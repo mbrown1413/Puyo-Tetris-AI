@@ -1,8 +1,6 @@
-from unittest import mock
-
-from ptai.types import MoveAction
-from .puyo import PPT2PuyoInterface
-from ..switch import Switch
+from ptai.actions import MoveAction
+from .puyointerface import PPT2PuyoInterface
+from ptai.ppt2.switch import Switch
 
 
 class MockSwitch(Switch):

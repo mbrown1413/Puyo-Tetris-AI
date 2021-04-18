@@ -1,8 +1,8 @@
-import random
-from typing import Union
+from typing import cast
 
-from ptai.ai import AI, ScoreBasedAI
-from ptai.types import MoveAction
+from ptai.ai import ScoreBasedAI
+from ptai.actions import MoveAction
+from ptai.gamestate import GameState
 from ptai.puyo.gamestate import PuyoGameState
 
 
@@ -15,7 +15,8 @@ class SimpleGreedyAI(ScoreBasedAI):
     the highest score is chosen. Ties are broken randomly.
     """
 
-    def score_move(self, state:PuyoGameState, move:MoveAction) -> float:
+    def score_move(self, state:GameState, move:MoveAction) -> float:
+        state = cast(PuyoGameState, state)
         result = state.move(move)
         value = 0.0
 
@@ -41,7 +42,8 @@ class SimpleComboAI(ScoreBasedAI):
     potential to make combos.
     """
 
-    def score_move(self, state:PuyoGameState, move:MoveAction) -> float:
+    def score_move(self, state:GameState, move:MoveAction) -> float:
+        state = cast(PuyoGameState, state)
         result = state.move(move)
         value = 0.0
 

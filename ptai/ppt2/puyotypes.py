@@ -2,7 +2,7 @@ from enum import Enum
 
 import numpy
 
-from ptai.gameinterface.switchtypes import SwitchType, Struct, AbstractArray, make_array_t, UInt32, UInt8
+from ptai.ppt2.switchtypes import SwitchType, Struct, AbstractArray, make_array_t, UInt32, UInt8
 
 
 class PUYO(Enum):

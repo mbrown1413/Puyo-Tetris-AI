@@ -1,5 +1,4 @@
-from ptai.types import MoveAction
-from ptai.gamestate import MoveResult
+from ptai.actions import MoveAction
 from . import gamestate
 
 

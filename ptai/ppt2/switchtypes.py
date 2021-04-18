@@ -9,7 +9,7 @@ from collections import OrderedDict
 from textwrap import indent
 from dataclasses import dataclass
 
-from ptai.gameinterface.switch import Switch
+from ptai.ppt2.switch import Switch
 
 STRUCT_INDENT = "|     "
 

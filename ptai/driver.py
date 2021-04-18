@@ -1,5 +1,4 @@
-from ptai.gameinterface.base import GameInterface
-from ptai.types import PressButtonAction
+from ptai.gameinterface import GameInterface
 from ptai.ai import AI
 
 class Driver:
@@ -10,6 +9,8 @@ class Driver:
 
     def play(self):
         expected_next_state = None
+        last_move = None
+        last_state = None
         while True:
             state = self.interface.get_state()
             if state.new_turn:

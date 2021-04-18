@@ -63,6 +63,7 @@ class Switch:
         self.send_command(f"configure mainLoopSleepTime {milliseconds}")
 
     def press_button(self, button):
+        print("PRESSING", button)
         self.send_command(f"click {button}")
 
     def hold_button(self, button):

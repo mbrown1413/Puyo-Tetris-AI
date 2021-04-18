@@ -4,7 +4,7 @@ from typing import Iterable, List, Dict, Tuple
 
 import numpy
 
-from ptai.types import GameType, MoveAction
+from ptai.actions import MoveAction
 
 
 @dataclass
@@ -30,7 +30,6 @@ class GameState(ABC):
     at the bottom left. The queue of pieces includes the piece currently
     falling, i.e. a pop(0) is performed on the queue when move() is called.
     """
-    game_type: GameType
 
     # Map cell value to tuple of (red, green, blue) color to draw.
     cell_colors: Dict[bytes, Tuple[int, int, int]]

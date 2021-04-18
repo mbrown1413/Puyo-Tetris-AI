@@ -4,13 +4,9 @@
 #
 #    pip-compile
 #
-future==0.18.2
-    # via serial
-iso8601==0.1.14
-    # via serial
+numpy==1.20.2
+    # via -r requirements.in
 pillow==8.2.0
     # via -r requirements.in
-pyyaml==5.4.1
-    # via serial
-serial==0.0.97
+pyusb==1.1.1
     # via -r requirements.in

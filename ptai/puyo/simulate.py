@@ -1,13 +1,12 @@
 import random
 
-from ptai.types import GameType, Action, MoveAction
+from ptai.actions import Action, MoveAction
 from ptai.gamestate import GameState
-from ptai.gameinterface.base import GameInterface
+from ptai.gameinterface import GameInterface
 from ptai.puyo.gamestate import PuyoGameState
 
 
 class SimulatedPuyoInterface(GameInterface):
-    game_type = GameType.PUYO
 
     def __init__(self):
         self.state = PuyoGameState()
@@ -27,11 +26,11 @@ class SimulatedPuyoInterface(GameInterface):
             raise NotImplementedError(f"Interface does not support action f{action}")
 
     def get_state(self) -> GameState:
-      state = self.state.copy()
-      state.new_turn = True
-      print()
-      print(state)
-      return state
+        state = self.state.copy()
+        state.new_turn = True
+        print()
+        print(state)
+        return state
 
     def perform_move(self, move:MoveAction):
         result = self.state.move(move)
