@@ -56,27 +56,42 @@ class PPT2PuyoInterface(GameInterface):
 
         # Rotation
         if move.orientation == 0:
-            pass
+            rotation_key = None
+            rotation_count = 0
         elif move.orientation == 1:
-            self.perform_action(PressButtonAction("A"))
+            rotation_key = "A"
+            rotation_count = 1
         elif move.orientation == 2:
-            self.perform_action(PressButtonAction("A"))
-            self.perform_action(PressButtonAction("A"))
+            rotation_key = "A"
+            rotation_count = 2
         elif move.orientation == 3:
-            self.perform_action(PressButtonAction("B"))
+            rotation_key = "B"
+            rotation_count = 1
 
             # Since rotation point is the bottom bean, this effectively moves
             # the piece to the left.
             delta_x += 1
 
-        # Left / right
+        # Direction
+        direction_count = abs(delta_x)
         direction_key = "DRIGHT" if delta_x > 0 else "DLEFT"
-        for _ in range(abs(delta_x)):
-            self.perform_action(PressButtonAction(direction_key))
+
+        # Press buttons, alternating between rotation and direction
+        self.switch.set_sleep_time(20)
+        for i in range(3):
+
+            if rotation_count > 0:
+                self.switch.press_button(rotation_key)
+                rotation_count -= 1
+
+            if direction_count > 0:
+                self.switch.press_button(direction_key)
+                direction_count -= 1
+        self.switch.set_sleep_time(8)
 
         #TODO: Double check that we moved correctly by calling get_state()
         #      before doing fast down.
 
         # Fast down
         if move.fast_down:
-            self.perform_action(PressButtonAction("DUP"))
+            self.switch.press_button("DUP")
