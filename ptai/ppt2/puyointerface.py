@@ -21,7 +21,9 @@ class PPT2PuyoInterface(GameInterface):
 
         self.switch.send_command("configure buttonClickSleepTime 20")
         self.switch.set_sleep_time(8)
-        self._previous_queue:Optional[tuple] = None
+        self._prev_queue:Optional[tuple] = None
+        self._queue_changed = True
+        self._expected_pair = None
 
     def perform_action(self, action:Action):
         if isinstance(action, PressButtonAction):
@@ -40,13 +42,33 @@ class PPT2PuyoInterface(GameInterface):
         player = player_pointer.deref(self.switch)
         state = player.get_game_state(self.switch)
 
-        #TODO: If a puyo pair is repeated, new_turn is not set. Use current x/y
-        #      instead? Just account for pieces being able to be bumped up when
-        #      rotated.
-        queue = tuple(state.queue[0])
-        if queue != self._previous_queue and self._previous_queue is not None:
+        # Detect changes in the next puyo queue since the last new turn
+        queue = tuple(state.queue)
+        if queue != self._prev_queue:
+            self._queue_changed = True
+            # When the queue changes, we mark down what the previous state's
+            # next pair was going to be. This is because the game updates the
+            # next pair before it updates the currently falling pair. We'll use
+            # this to double check that we've actually seen a new state.
+            if not self._expected_pair and self._prev_queue:
+                self._expected_pair = self._prev_queue[1]
+        self._prev_queue = queue
+
+        # Detect new turn
+        if (
+            # (2, 11) is where the falling pair starts
+            state.current_position == (2, 11) and \
+            # If the queue hasn't changed since the last new turn, the odds are
+            # very low that we're on a new turn.
+            self._queue_changed and \
+            # The current pair must be the same as what we're expecting to come
+            # from the queue. Things work alright without this, but there are
+            # some edge cases it catches.
+            (self._expected_pair is None or queue[0] == self._expected_pair)
+        ):
             state.new_turn = True
-        self._previous_queue = queue
+            self._queue_changed = False
+            self._expected_pair = None
 
         self.switch.set_sleep_time(8)
         return state
@@ -78,8 +100,7 @@ class PPT2PuyoInterface(GameInterface):
 
         # Press buttons, alternating between rotation and direction
         self.switch.set_sleep_time(20)
-        for i in range(3):
-
+        for _ in range(3):
             if rotation_count > 0:
                 self.switch.press_button(rotation_key)
                 rotation_count -= 1
@@ -87,7 +108,6 @@ class PPT2PuyoInterface(GameInterface):
             if direction_count > 0:
                 self.switch.press_button(direction_key)
                 direction_count -= 1
-        self.switch.set_sleep_time(8)
 
         #TODO: Double check that we moved correctly by calling get_state()
         #      before doing fast down.
@@ -95,3 +115,5 @@ class PPT2PuyoInterface(GameInterface):
         # Fast down
         if move.fast_down:
             self.switch.press_button("DUP")
+
+        self.switch.set_sleep_time(8)

@@ -1,3 +1,5 @@
+from typing import List, Tuple
+
 from ptai.actions import MoveAction
 from .puyointerface import PPT2PuyoInterface
 from ptai.ppt2.switch import Switch
@@ -5,8 +7,9 @@ from ptai.ppt2.switch import Switch
 
 class MockSwitch(Switch):
 
+    #pylint: disable=super-init-not-called
     def __init__(self, *args, **kwargs):
-        self.key_presses = []
+        self.key_presses: List[str] = []
 
     def press_button(self, button):
         self.key_presses.append(button)
@@ -19,7 +22,7 @@ def test_perform_move():
     mock_switch = MockSwitch()
     interface = PPT2PuyoInterface(switch=mock_switch)
 
-    testdata = [
+    testdata: List[Tuple[MoveAction, List[str]]] = [
         # rotation=0
         (MoveAction(b'rr', 0, 0), ["DLEFT", "DLEFT", "DUP"]),
         (MoveAction(b'rr', 0, 1), ["DLEFT", "DUP"]),
@@ -56,4 +59,4 @@ def test_perform_move():
     for move, expected_keys in testdata:
         mock_switch.key_presses = []
         interface.perform_action(move)
-        assert mock_switch.key_presses == expected_keys
+        assert set(mock_switch.key_presses) == set(expected_keys)

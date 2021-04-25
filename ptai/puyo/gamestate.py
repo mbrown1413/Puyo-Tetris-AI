@@ -23,7 +23,11 @@ class PuyoGameState(GameState):
         b'k': (0, 0, 0),
     }
 
-    def __init__(self, board=None, queue=None, new_turn=False):
+    def __init__(self, board=None, queue=None, new_turn=False, current_position=None):
+        """
+        Args additional to superclass:
+        * current_position - (x, y) of the currently falling piece.
+        """
         if board is None:
             board = numpy.array([[b'.' for y in range(12)]
                                        for x in range(6)], dtype="|S1")
@@ -32,6 +36,7 @@ class PuyoGameState(GameState):
         assert board.shape == (6, 12)
 
         super().__init__(board, queue or [], new_turn)
+        self.current_position = current_position
 
     def __str__(self):
         lines = []

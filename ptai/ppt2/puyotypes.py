@@ -1,3 +1,6 @@
+"""
+Memory structures for Puyo Puyo Tetris 2 pertaining to Puyo.
+"""
 from enum import Enum
 
 import numpy
@@ -194,6 +197,25 @@ class Struct4(Struct):
 
 
 class PlayerGameState(Struct):
+    """All state for a given player.
+
+    Initially, before the game has actually started, the game state will look
+    like this:
+    * Board: Empty
+    * Current pair: (blank, blank)
+    * Current position: (-1, 14)
+    * Next pair: The pairs which will drop on the first turn.
+    * Next next pair: The pairs which will drop on the second turn.
+
+    When a new turn is starting, this state changes in the following order:
+    1. Falling piece is placed on board. (skipped on start of the first turn)
+    2. Queue shifts:
+        * Next pair = Next next pair
+        * Next next pair = New pair
+    3. New turn actually starts:
+        * Current pair = Old next pair
+        * Current position = (2, 11)
+    """
     fields = (
         Struct.Field(name="frame_counter", type=UInt32, offset=0x6C),
         Struct.Field(name="struct2", type=Struct2.pointer_t, offset=0x98),
@@ -218,12 +240,18 @@ class PlayerGameState(Struct):
                 board["current_puyo_pair"][0].byte + board["current_puyo_pair"][1].byte,
                 struct2["next_puyo_pair"][1].byte + struct2["next_puyo_pair"][0].byte,
                 struct2["next_next_puyo_pair"][1].byte + struct2["next_next_puyo_pair"][0].byte,
-            ]
+            ],
+            current_position=(
+                # Convert to bottom left origin, without padding.
+                board["current_x"].value - 1,
+                14 - board["current_y"].value
+            ),
         )
 
 
 class MainStruct(Struct):
     fields = (
+        # These will be null pointers if no game is being played
         Struct.Field(name="player0", type=PlayerGameState.pointer_t, offset=0x208),
         Struct.Field(name="player1", type=PlayerGameState.pointer_t, offset=0x220),
         Struct.Field(name="player2", type=PlayerGameState.pointer_t, offset=0x238),
