@@ -70,6 +70,11 @@ class PPT2PuyoInterface(GameInterface):
             self._queue_changed = False
             self._expected_pair = None
 
+        # Remove blank currently falling pair, which happens before the game
+        # has actually started.
+        if state.queue[0] == b'..':
+            state.queue.pop(0)
+
         self.switch.set_sleep_time(8)
         return state
 
