@@ -54,6 +54,10 @@ def main():
     play_parser.set_defaults(func=cmd_play)
     add_interface_arg(play_parser)
     add_ai_arg(play_parser)
+    play_parser.add_argument("--max-turns", type=int, help="""
+        Exit after this many turns have been played. Mainly used for
+        performance testing and profiling.
+    """)
 
     args = parser.parse_args()
     game = GAMES[args.game]
@@ -166,4 +170,4 @@ def cmd_play(game, args):
     ai = get_ai(game, args.ai)
     driver = Driver(interface, ai)
 
-    driver.play()
+    driver.play(max_turns=args.max_turns)

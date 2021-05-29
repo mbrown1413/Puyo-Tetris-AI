@@ -7,13 +7,15 @@ class Driver:
         self.interface = interface
         self.ai = ai
 
-    def play(self):
+    def play(self, max_turns=float("inf")):
         expected_next_state = None
         last_move = None
         last_state = None
-        while True:
+        n_turns = 0
+        while n_turns <= max_turns:
             state = self.interface.get_state()
             if state.new_turn:
+                n_turns += 1
 
                 if expected_next_state:
                     # Check if the previous move was performed correctly
